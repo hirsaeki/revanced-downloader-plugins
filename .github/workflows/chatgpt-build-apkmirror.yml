@@ -1,0 +1,39 @@
+name: ChatGPT build APKMirror
+
+on:
+  push:
+    branches:
+      - chatgpt-build-apkmirror
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build APKMirror release APK
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew :apkmirror-downloader:assembleRelease --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: apkmirror-downloader-apk
+          path: apkmirror-downloader/build/outputs/apk/release/*.apk
+          if-no-files-found: error
