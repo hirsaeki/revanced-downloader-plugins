@@ -25,7 +25,14 @@ jobs:
       - name: Cache Gradle
         uses: burrunan/gradle-cache-action@v2
 
-      - name: Build
+      - name: Build APKMirror release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew build --no-daemon
+        run: ./gradlew :apkmirror-downloader:assembleRelease --no-daemon
+
+      - name: Upload APKMirror APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: apkmirror-downloader
+          path: apkmirror-downloader/build/outputs/apk/release/*.apk
+          if-no-files-found: error
