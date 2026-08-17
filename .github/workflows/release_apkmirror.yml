@@ -1,0 +1,36 @@
+name: Release APKMirror downloader
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Build APKMirror release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew :apkmirror-downloader:assembleRelease --no-daemon
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="apkmirror-downloader-1.0.0-dev.1"
+          apk="apkmirror-downloader/build/outputs/apk/release/apkmirror-downloader-1.0.0-dev.1.apk"
+          gh release create "$tag" "$apk" \
+            --target "$GITHUB_SHA" \
+            --title "APKMirror downloader 1.0.0-dev.1" \
+            --notes "APKMirror downloader built from this fork's dev branch."
